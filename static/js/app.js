@@ -1,15 +1,5 @@
-
-
-
-
-
-
-
-
-
 // Function that populates the metadata
-function demoInfo(sample)
-{
+function demoInfo(sample) {
     d3.json("samples.json").then((data) => {
         let metaData = data.metadata;
 
@@ -19,24 +9,23 @@ function demoInfo(sample)
 
         d3.select("#sample-metadata").html("");
 
-        Object.entries(resultData).forEach(([key, value]) =>{
+        Object.entries(resultData).forEach(([key, value]) => {
             d3.select("#sample-metadata")
                 .append("h5").text(`${key}: ${value}`);
-    
+
         });
     });
 }
 
 // Function that build bar chart
-function buildBarChart(sample)
-{
+function buildBarChart(sample) {
     let data = d3.json("samples.json");
 
     d3.json("samples.json").then((data) => {
         let sampleData = data.samples;
 
         let result = sampleData.filter(sampleResult => sampleResult.id == sample);
-        
+
         let resultData = result[0];
 
         let otu_ids = resultData.otu_ids;
@@ -61,20 +50,19 @@ function buildBarChart(sample)
         };
 
         Plotly.newPlot("bar", [barChart], layout)
-     
+
     });
 }
 
 // Function that build bubble chart
-function buildBubbleChart(sample)
-{
+function buildBubbleChart(sample) {
     let data = d3.json("samples.json");
 
     d3.json("samples.json").then((data) => {
         let sampleData = data.samples;
 
         let result = sampleData.filter(sampleResult => sampleResult.id == sample);
-        
+
         let resultData = result[0];
 
         let otu_ids = resultData.otu_ids;
@@ -97,22 +85,50 @@ function buildBubbleChart(sample)
         let layout = {
             title: "Bacteria Cultures per Sample",
             hovermode: "closest",
-            xaxis: {title: "OTU ID"}
+            xaxis: { title: "OTU ID" }
         };
 
         Plotly.newPlot("bubble", [bubbleChart], layout)
-     
+
+    });
+}
+
+
+// Gauge chart
+function buildGaugeChart(sample) {
+    let data = d3.json("samples.json");
+
+    d3.json("samples.json").then((data) => {
+        let metaData = data.metadata;
+
+        let result = metaData.filter(sampleResult => sampleResult.id == sample);
+
+        let resultData = result[0].wfreq;
+
+        var data = [
+            {
+                domain: { x: [0, 1], y: [0, 1] },
+                value: resultData,
+                title: { text: "<b>Belly Button Washing Frequency</b><br>Scrubs per Week" },
+                type: "indicator",
+                mode: "gauge+number",
+                delta: { reference: 400 },
+                gauge: { axis: { range: [null, 9] } }
+            }
+        ];
+
+        var layout = { height: 400 };
+        Plotly.newPlot('gauge', data);
     });
 }
 
 // Function that initializes the dashboard
-function initialize()
-{
+function initialize() {
     var select = d3.select("#selDataset");
-    
+
     d3.json("samples.json").then((data) => {
         let sampleNames = data.names;
-    
+
         sampleNames.forEach((sample) => {
             select.append("option")
                 .text(sample)
@@ -121,18 +137,19 @@ function initialize()
         let firstSample = sampleNames[0];
         demoInfo(firstSample);
         buildBarChart(firstSample);
-        buildBubbleChart(firstSample)
+        buildBubbleChart(firstSample);
+        buildGaugeChart(firstSample);
     });
 
-    
+
 }
 
 // Function that updates the dashboard
-function optionChanged(item)
-{
+function optionChanged(item) {
     demoInfo(item);
     buildBarChart(item);
     buildBubbleChart(item);
+    buildGaugeChart(item);
 }
 
 initialize();
